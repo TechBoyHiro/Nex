@@ -1,0 +1,163 @@
+#MODELS:
+
+Group:
+*Subcates
+*Shop (Followers)
+name
+description
+rate
+successfulproject
+datejoin
+website
+instalink
+address
+isapproved
+icon
+
+
+GroupMember:
+*Freelancer
+*Group
+*Token
+isadmin
+datejoin
+role
+share
+
+
+BusinessType:
+*Subcats
+name
+description
+
+
+Shop:
+*User
+*Token
+*Businesstype
+name
+description
+address
+phone
+profilepic
+datejoin
+instalink
+website
+
+
+Gig:
+*Group
+*Subcate
+title
+description
+rate
+leastprice
+
+
+GigFile:
+*Gig
+file
+priority
+
+
+Category:
+name
+description
+
+
+Subcategory:
+*Category
+name
+description
+
+
+Review:
+*Order
+*Package
+rate
+description
+date
+
+
+Package:
+*Gig
+name
+description
+price
+deliverytime
+numberofrevisions
+
+
+PackageDetail:
+*Packge
+key
+value
+
+
+Order:
+*shop
+*Package
+date
+ispaid
+tracknumber
+deliverytime
+description
+
+
+Freelancer:
+name
+description
+password
+email	
+phone
+city
+address
+datejoin
+
+
+FreeFile:
+*Freelancer
+file
+description
+
+
+City:
+name
+description
+
+
+Tag:
+*Gig
+name
+
+
+Sms:
+sms
+phone
+issued
+valid
+
+
+Token:
+token
+validdate
+
+
+#RELATIONSHIPS:
+
+Group m<---->m Subcate
+Group m<----->m Shop
+Group 1<---->m Gig
+Group 1<----->m GroupMem
+Group m<----->m Shop (Followers)
+GroupMem m<------>1 Freelancer
+Gig 1<----->m Review
+Gig 1<----->m Package
+Gig m<------>1 Subcat
+Gig m<------->m Tag
+Package 1<----->m PackageDetail
+Order m<----->1 Package
+Order m<----->1 Shop
+Freelancer 1<----->m FreeFile
+Category 1<----->m Subcategory
+Freelancer m<----->1 City
