@@ -24,6 +24,7 @@ random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_upperca
 random_numebr = lambda N: ''.join(random.SystemRandom().choice(string.digits) for _ in range(N))
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def RegisterFreelancer(request):
@@ -76,6 +77,7 @@ def RegisterFreelancer(request):
         }, encoder=JSONEncoder)
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def Update(request):
@@ -121,6 +123,7 @@ def Update(request):
         }, encoder=JSONEncoder)
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def Login(request):
@@ -164,6 +167,7 @@ def Login(request):
         }, encoder=JSONEncoder)
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def GetFreelancer(request):

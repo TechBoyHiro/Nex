@@ -25,6 +25,7 @@ random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_upperca
 random_number = lambda N: ''.join(random.SystemRandom().choice(string.digits) for _ in range(N))
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def RegisterShop(request):
@@ -88,6 +89,7 @@ def RegisterShop(request):
         }, encoder=JSONEncoder, status=400)
 
 
+# Done
 @csrf_exempt
 def Login(request):
     # Login
@@ -115,6 +117,7 @@ def Login(request):
     return LoginByPhone(phone,password)
 
 
+# Done
 def LoginByPhone(phone,password):
     try:
         if (Shop.objects.filter(phone=phone).exists()):
@@ -148,6 +151,7 @@ def LoginByPhone(phone,password):
         }, encoder=JSONEncoder)
 
 
+# Done
 def LoginByEmail(email,password):
     try:
         if (User.objects.filter(email=email).exists()):
@@ -179,6 +183,7 @@ def LoginByEmail(email,password):
         }, encoder=JSONEncoder)
 
 
+# Done
 @csrf_exempt
 @api_view(['Post'])
 def GetShop(request):

@@ -25,6 +25,7 @@ random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_upperca
 random_number = lambda N: ''.join(random.SystemRandom().choice(string.digits) for _ in range(N))
 
 
+# Done
 @csrf_exempt
 @api_view(['POST'])
 def AddGroup(request):
