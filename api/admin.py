@@ -20,16 +20,21 @@ class FreelancerAdmin(admin.ModelAdmin):
         model = Freelancer
 
 
-admin.site.register(Token,TokenAdmin)
-admin.site.register(Shop)
-admin.site.register(Freelancer,FreelancerAdmin)
-admin.site.register(City)
-admin.site.register(FreeFile)
-admin.site.register(Category)
-admin.site.register(SubCategory)
-admin.site.register(Gig)
-admin.site.register(GigFile)
-admin.site.register(Tag)
-admin.site.register(Package)
-admin.site.register(PackageDetail)
-admin.site.register(SMS)
+admin.site.register(Token,TokenAdmin) #
+admin.site.register(Freelancer,FreelancerAdmin) #
+admin.site.register(City) #
+admin.site.register(FreeFile) #
+admin.site.register(Category) #
+admin.site.register(SubCategory) #
+admin.site.register(BusinessType) #
+admin.site.register(Shop) #
+admin.site.register(Group) #
+admin.site.register(GroupMember) #
+admin.site.register(Gig) #
+admin.site.register(GigFile) #
+admin.site.register(Tag) #
+admin.site.register(Order) #
+admin.site.register(Review) #
+admin.site.register(Package) #
+admin.site.register(PackageDetail) #
+admin.site.register(SMS) #
