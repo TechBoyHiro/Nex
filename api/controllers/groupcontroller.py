@@ -40,7 +40,7 @@ def AddGroup(request):
                 'code': '400',
                 'data': 'لطفا نام گروه را وارد کنید'
             }, encoder=JSONEncoder,status=400)
-        if Group.objects.filter(name=data['name']).exists:
+        if Group.objects.filter(name=data['name']).exists():
             return JsonResponse({
                 'success': False,
                 'code': '400',
