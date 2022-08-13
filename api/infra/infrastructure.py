@@ -1,5 +1,5 @@
 from json import JSONEncoder
-from api.models import Token,MainUser
+from api.models import Token
 from django.http import JsonResponse
 from django.utils.timezone import make_aware
 from datetime import datetime,timedelta
@@ -39,7 +39,7 @@ def GetObjByToken(token):
     tokenobj = Token.objects.filter(token = token).get()
     if hasattr(tokenobj, 'freelancer'):
         return False,tokenobj.freelancer
-    return True,tokenobj.mainuser
+    return True,tokenobj.shop
 
 
 def TokenHandler(token):

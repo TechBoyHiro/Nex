@@ -17,7 +17,7 @@ class Token(models.Model): # token assigns to every user
 class Category(models.Model):
     name = models.TextField()
     description = models.TextField()
-    icon = models.ImageField(upload_to='CategoryIcons',blank=True,null=True)
+    icon = models.ImageField(upload_to='CategoryIcons/',blank=True,null=True)
 
     def __str__(self):
         return str(self.id) + ' ** ' + self.name + ' ** ' + self.description
@@ -27,7 +27,7 @@ class SubCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.RESTRICT)
     name = models.TextField()
     description = models.TextField()
-    icon = models.ImageField(upload_to='SubCategoryIcons', blank=True, null=True)
+    icon = models.ImageField(upload_to='SubCategoryIcons/', blank=True, null=True)
 
     def __str__(self):
         return str(self.id) + ' ** ' + self.name + ' ** ' + self.description
@@ -49,7 +49,7 @@ class Shop(models.Model):
     name = models.CharField(max_length=60)
     address = models.TextField()
     phone = models.CharField(max_length=11)
-    profilepic = models.ImageField(upload_to='ShopProfiles',blank=True,null=True)
+    profilepic = models.ImageField(upload_to='ShopProfiles/',blank=True,null=True)
     datejoin = models.DateField(auto_now_add=True)
     instalink = models.TextField()
     website = models.TextField()
@@ -75,7 +75,8 @@ class Freelancer(models.Model):
     phone = models.CharField(max_length=11)
     address = models.TextField()
     datejoin = models.DateField(auto_now_add=True)
-    profilepic = models.ImageField(upload_to='FreelancerProfiles',blank=True,null=True)
+    profilepic = models.ImageField(upload_to='FreelancerProfiles/',blank=True,null=True)
+    isauthenticated = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id) + ' ** ' + self.name + ' ** ' + self.token.token + ' ** ' + self.phone
@@ -83,7 +84,7 @@ class Freelancer(models.Model):
 # Done
 class FreeFile(models.Model):
     freelancer = models.ForeignKey(Freelancer,on_delete=models.CASCADE)
-    file = models.FileField(upload_to='FreeFiles')
+    file = models.FileField(upload_to='FreeFiles/')
     description = models.TextField()
 
     def __str__(self):
@@ -101,7 +102,7 @@ class Group(models.Model):
     website = models.TextField()
     instalink = models.TextField()
     isapproved = models.BooleanField(default=False)
-    icon = models.ImageField(upload_to='GroupIcons',blank=True,null=True)
+    icon = models.ImageField(upload_to='GroupIcons/',blank=True,null=True)
 
 # Done
 class GroupMember(models.Model):
@@ -127,7 +128,7 @@ class Gig(models.Model):
 # Done
 class GigFile(models.Model):
     gig = models.ForeignKey(Gig,on_delete=models.RESTRICT)
-    file = models.FileField(upload_to='GigFiles')
+    file = models.FileField(upload_to='GigFiles/')
     priority = models.IntegerField(default=1)
 
     def __str__(self):
@@ -187,6 +188,7 @@ class SMS(models.Model):
     phone = models.CharField(max_length=11)
     issued = models.DateTimeField(auto_now_add=True)
     valid = models.DateTimeField()
+
 
 
 

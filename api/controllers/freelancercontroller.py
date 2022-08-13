@@ -9,8 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import MainUser
-from api.models import Freelancer,FreeFile,Token,Category
+from api.models import Freelancer,FreeFile,Token,Category,City
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse,TokenHandler
 from django.core.serializers.json import DjangoJSONEncoder
@@ -30,7 +29,7 @@ random_numebr = lambda N: ''.join(random.SystemRandom().choice(string.digits) fo
 def RegisterFreelancer(request):
     # Register A Freelancer
     data = json.loads(request.body)
-    check = Check(data, ['name', 'password','email','phone','address','description','age','categoryid'])
+    check = Check(data, ['name', 'password', 'email', 'phone'])
     if not (check is True):
         return check
     try:
@@ -39,35 +38,31 @@ def RegisterFreelancer(request):
                 'success': False,
                 'code': '400',
                 'data': 'لطفا نام کاربری را وارد کنید'
-            }, encoder=JSONEncoder,status=400)
+            }, encoder=JSONEncoder, status=400)
         if ((data['phone'] == "") | (data['phone'] is None)):
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'لطفا شماره همراه را وارد کنید'
-            }, encoder=JSONEncoder,status=400)
-        phone = data['phone']
-        if Freelancer.objects.filter(phone=phone).exists():
+            }, encoder=JSONEncoder, status=400)
+        if Freelancer.objects.filter(phone=data['phone']).exists():
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'این شماره همراه قبلا در سیستم ثبت شده است'
-            }, encoder=JSONEncoder,status=400)
+            }, encoder=JSONEncoder, status=400)
         name = data['name']
         email = 'None'
         if not ((data['email'] == "") | (data['email'] is None)):
             email = data['email']
+        phone = data['phone']
         password = data['password']
-        description = data['description']
-        address = data['address']
-        age = data['age']
-        category = Category.objects.filter(id=data['categoryid']).get()
         token = random_str(128)
         while Token.objects.filter(token=token).exists():
             token = random_str(128)
         tokenobj = Token.objects.create(token=token)
-        new_user = Freelancer.objects.create(name=name,description=description,password=password,
-                                             token=tokenobj,email=email,phone=phone,address=address,age=age,category=category)
+        freelancer = Freelancer.objects.create(name=name,password=password,
+                                             token=tokenobj, email=email, phone=phone)
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -85,7 +80,7 @@ def RegisterFreelancer(request):
 @api_view(['POST'])
 def Update(request):
     data = json.loads(request.body)
-    check = (Check(data, ['email', 'address', 'age', 'description','name','password']) & Check(request.headers,['token']))
+    check = (Check(data, ['cityid', 'address', 'description','password']) & Check(request.headers,['token']))
     if not (check is True):
         return check
     token = request.headers['token']
@@ -97,14 +92,22 @@ def Update(request):
         }, encoder=JSONEncoder)
     result, obj = GetObjByToken(token)
     if not (result):
-        mainuser = obj
-        mainuser.age = BlankOrElse(mainuser.age,data['age'])
-        mainuser.description = BlankOrElse(mainuser.description,data['description'])
-        mainuser.address = BlankOrElse(mainuser.address,data['address'])
-        mainuser.name = BlankOrElse(mainuser.name,data['name'])
-        mainuser.password = BlankOrElse(mainuser.password, data['password'])
-        mainuser.email = BlankOrElse(mainuser.email,data['email'])
-        mainuser.save()
+        freelancer = obj
+        if not (data['cityid'] == '' | data['cityid'] is None):
+            if not City.objects.filter(id=data['cityid']).exists:
+                return JsonResponse({
+                    'success': False,
+                    'code': '404',
+                    'data': 'شهر موجود نمیباشد'
+                }, encoder=JSONEncoder)
+            freelancer.city = City.objects.filter(id=data['cityid']).get()
+        freelancer.description = BlankOrElse(freelancer.description,data['description'])
+        freelancer.address = BlankOrElse(freelancer.address,data['address'])
+        freelancer.name = BlankOrElse(freelancer.name,data['name'])
+        freelancer.password = BlankOrElse(freelancer.password, data['password'])
+        freelancer.email = BlankOrElse(freelancer.email,data['email'])
+        freelancer.isauthenticated = True
+        freelancer.save()
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -119,7 +122,7 @@ def Update(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 def Login(request):
     data = json.loads(request.body)
     check = Check(data, ['email','phone','password'])
@@ -158,6 +161,47 @@ def Login(request):
             'success': False,
             'code': '404',
             'data': 'کاربر در سیستم پیدا نشد'
+        }, encoder=JSONEncoder)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def GetFreelancer(request):
+    # Get Either User Data Or Freelancer Data
+    check = Check(request.headers,['token'])
+    if not (check is True):
+        return check
+    token = request.headers['token']
+    if not (CheckToken(token)):
+        return JsonResponse({
+            'success': False,
+            'code': '404',
+            'data': 'کاربر در سیستم پیدا نشد'
+        }, encoder=JSONEncoder)
+    result,obj = GetObjByToken(token)
+    if (result):
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'موچودی فریلنسر نمیباشد'
+        }, encoder=JSONEncoder)
+    else:
+        freelancer = obj
+        context = {}
+        context['Name'] = freelancer.name
+        context['Email'] = freelancer.email
+        if not (freelancer.city is None):
+            context['City'] = freelancer.city.name
+        context['Address'] = freelancer.address
+        context['Description'] = freelancer.description
+        context['DateJoin'] = freelancer.datejoin.__str__()
+        if not (freelancer.profilepic is None):
+            context['ProfilePic'] = str(freelancer.profilepic.url)
+        context['IsAuthenticated'] = freelancer.isauthenticated
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
         }, encoder=JSONEncoder)
 
 
