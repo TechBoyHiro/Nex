@@ -198,7 +198,7 @@ def GetFreelancer(request):
         context['Address'] = freelancer.address
         context['Description'] = freelancer.description
         context['DateJoin'] = freelancer.datejoin.__str__()
-        if not (freelancer.profilepic is None):
+        if freelancer.profilepic:
             context['ProfilePic'] = str(freelancer.profilepic.url)
         context['IsAuthenticated'] = freelancer.isauthenticated
         return JsonResponse({
