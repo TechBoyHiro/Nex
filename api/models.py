@@ -34,7 +34,7 @@ class SubCategory(models.Model):
 
 # Done
 class BusinessType(models.Model):
-    subcategories = models.ManyToManyField(SubCategory)
+    subcategories = models.ManyToManyField(SubCategory,blank=True,null=True)
     name = models.TextField()
     description = models.TextField()
 
@@ -92,8 +92,8 @@ class FreeFile(models.Model):
 
 # Done
 class Group(models.Model):
-    subcategories = models.ManyToManyField(SubCategory)
-    followers = models.ManyToManyField(Shop)
+    subcategories = models.ManyToManyField(SubCategory,blank=True,null=True)
+    followers = models.ManyToManyField(Shop,blank=True,null=True)
     name = models.CharField(max_length=20)
     description = models.TextField()
     rate = models.FloatField(default=2.5)
@@ -176,7 +176,7 @@ class PackageDetail(models.Model):
 
 # Done
 class Tag(models.Model):
-    gigs = models.ManyToManyField(Gig)
+    gigs = models.ManyToManyField(Gig,blank=True,null=True)
     name = models.TextField()
 
     def __str__(self):
