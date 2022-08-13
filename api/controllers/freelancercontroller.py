@@ -82,7 +82,7 @@ def RegisterFreelancer(request):
 @api_view(['POST'])
 def Update(request):
     data = json.loads(request.body)
-    check = (Check(data, ['cityid', 'address', 'description','password']) & Check(request.headers,['token']))
+    check = (Check(data, ['cityid', 'address', 'description','password','email']) & Check(request.headers,['token']))
     if not (check is True):
         return check
     token = request.headers['token']
@@ -105,7 +105,6 @@ def Update(request):
             freelancer.city = City.objects.filter(id=data['cityid']).get()
         freelancer.description = BlankOrElse(freelancer.description,data['description'])
         freelancer.address = BlankOrElse(freelancer.address,data['address'])
-        freelancer.name = BlankOrElse(freelancer.name,data['name'])
         freelancer.password = BlankOrElse(freelancer.password, data['password'])
         freelancer.email = BlankOrElse(freelancer.email,data['email'])
         freelancer.isauthenticated = True
