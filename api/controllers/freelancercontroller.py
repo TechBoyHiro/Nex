@@ -95,7 +95,7 @@ def Update(request):
     result, obj = GetObjByToken(token)
     if not (result):
         freelancer = obj
-        if not (data['cityid'] == '' | data['cityid'] is None):
+        if not ((data['cityid'] == '') | (data['cityid'] is None)):
             if not City.objects.filter(id=data['cityid']).exists:
                 return JsonResponse({
                     'success': False,
