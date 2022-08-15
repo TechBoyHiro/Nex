@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import Freelancer,FreeFile,Token,Category,City
+from api.models import Freelancer,Token,Category,City
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse,TokenHandler
 from django.core.serializers.json import DjangoJSONEncoder

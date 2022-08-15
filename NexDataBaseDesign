@@ -115,8 +115,8 @@ address
 datejoin
 
 
-FreeFile:
-*Freelancer
+GroupFile:
+*Group
 file
 description
 
@@ -158,6 +158,6 @@ Gig m<------->m Tag
 Package 1<----->m PackageDetail
 Order m<----->1 Package
 Order m<----->1 Shop
-Freelancer 1<----->m FreeFile
+Group 1<----->m GroupFile
 Category 1<----->m Subcategory
 Freelancer m<----->1 City

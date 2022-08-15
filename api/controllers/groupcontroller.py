@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import User,Token,Shop,SMS,BusinessType,Freelancer,Group,GroupMember
+from api.models import User,Token,Shop,SMS,BusinessType,Freelancer,Group,GroupMember,SubCategory
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
@@ -39,13 +39,13 @@ def AddGroup(request):
                 'success': False,
                 'code': '400',
                 'data': 'لطفا نام گروه را وارد کنید'
-            }, encoder=JSONEncoder,status=400)
+            }, encoder=JSONEncoder, status=400)
         if Group.objects.filter(name=data['name']).exists():
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'گروهی با این نام قبلا ثبت شده است'
-            }, encoder=JSONEncoder,status=400)
+            }, encoder=JSONEncoder, status=400)
         result, obj = GetObjByToken(request.headers['token'])
         if (result):
             return JsonResponse({
@@ -58,9 +58,10 @@ def AddGroup(request):
         description = data['description']
         insta = data['instalink']
         website = data['websitelink']
-        group = Group.objects.create(name=name,description=description,instalink=insta,website=website)
-        groupmember = GroupMember.objects.create(freelancer=freelancer,group=group,isadmin=True,role="Manager",share=100.0)
-        context = []
+        group = Group.objects.create(name=name, description=description, instalink=insta, website=website)
+        groupmember = GroupMember.objects.create(freelancer=freelancer, group=group, isadmin=True, role="Manager",
+                                                 share=100.0)
+        context = {}
         context['Message'] = "گروه با موفقیت ساخته شد"
         context['GroupId'] = group.id
         context['GroupName'] = group.name

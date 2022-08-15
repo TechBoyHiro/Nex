@@ -82,15 +82,6 @@ class Freelancer(models.Model):
         return str(self.id) + ' ** ' + self.name + ' ** ' + self.token.token + ' ** ' + self.phone
 
 # Done
-class FreeFile(models.Model):
-    freelancer = models.ForeignKey(Freelancer,on_delete=models.CASCADE)
-    file = models.FileField(upload_to='FreeFiles/')
-    description = models.TextField()
-
-    def __str__(self):
-        return self.freelancer.name + ' ** ' + self.description
-
-# Done
 class Group(models.Model):
     subcategories = models.ManyToManyField(SubCategory,blank=True,null=True)
     followers = models.ManyToManyField(Shop,blank=True,null=True)
@@ -104,6 +95,9 @@ class Group(models.Model):
     isapproved = models.BooleanField(default=False)
     icon = models.ImageField(upload_to='GroupIcons/',blank=True,null=True)
 
+    def __str__(self):
+        return str(self.id) + ' ** ' + self.name
+
 # Done
 class GroupMember(models.Model):
     freelancer = models.ForeignKey(Freelancer,on_delete=models.RESTRICT)
@@ -112,6 +106,15 @@ class GroupMember(models.Model):
     datejoin = models.DateField(auto_now_add=True)
     role = models.TextField()
     share = models.FloatField()
+
+# Done
+class GroupFile(models.Model):
+    group = models.ForeignKey(Group,on_delete=models.CASCADE)
+    file = models.FileField(upload_to='GroupFiles/')
+    description = models.TextField()
+
+    def __str__(self):
+        return self.group.name + ' ** ' + self.description
 
 # Done
 class Gig(models.Model):
