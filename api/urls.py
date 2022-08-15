@@ -25,4 +25,5 @@ urlpatterns = [
     #re_path(r'gig/addpack/$', gigcontroller.AddGigPackage, name="Add Package To A Gig"),
     # Group PATHS
     re_path(r'group/add/$', groupcontroller.AddGroup, name="Add Group"),
+    re_path(r'group/addsubcat/$', groupcontroller.AddGroupSubcat, name="Add Subcategories To A Group"),
 ]

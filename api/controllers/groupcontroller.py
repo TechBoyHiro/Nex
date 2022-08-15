@@ -76,3 +76,70 @@ def AddGroup(request):
             'code': '400',
             'data': 'ثبت گروه با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)
+
+
+# Done
+@csrf_exempt
+@api_view(['POST'])
+def AddGroupSubcat(request):
+    try:
+        data = json.loads(request.body)
+        check = (Check(data, ['groupid', 'subcats']) & Check(request.headers, ['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        if ((data['groupid'] == "") | (data['groupid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'لطفا آیدی گروه را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        if ((data['subcats'] == "") | (data['subcats'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'لطفا ایدی زیر دسته بندی ها را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        group = Group.objects.filter(id=data['groupid']).get()
+        gm = GroupMember.objects.filter(freelancer=freelancer, group=group).get()
+        if gm is None:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        if not gm.isadmin:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'دسترسی غیر مجاز'
+            }, encoder=JSONEncoder, status=400)
+        subcatids = str(data['subcats']).split(',')
+        for id in subcatids:
+            group.subcategories.add(SubCategory.objects.filter(id=id).get())
+        group.save()
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': 'زیر دسته بندی ها با موفقیت افزوده شدند'
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'زیر دسته بندی ها موجود نیست'
+        }, encoder=JSONEncoder, status=400)
