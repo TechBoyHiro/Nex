@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import User,Token,Shop,SMS,BusinessType,Freelancer,Group,GroupMember,SubCategory
+from api.models import GroupFile,Group,GroupMember,SubCategory
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
@@ -142,4 +142,70 @@ def AddGroupSubcat(request):
             'success': False,
             'code': '400',
             'data': 'زیر دسته بندی ها موجود نیست'
+        }, encoder=JSONEncoder, status=400)
+
+
+# Done
+@csrf_exempt
+@api_view(['POST'])
+def AddGroupFiles(request):
+    try:
+        data = request.data
+        check = (Check(data, ['groupid', 'images']) & Check(request.headers, ['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        files = request.FILES.getlist('images')
+        if not files:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'حداقل یک فایل ارسال کنید'
+            }, encoder=JSONEncoder, status=400)
+        if ((data['groupid'] == "") | (data['groupid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'لطفا آیدی گروه را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        group = Group.objects.filter(id=data['groupid']).get()
+        gm = GroupMember.objects.filter(freelancer=freelancer, group=group).get()
+        if gm is None:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        """if not gm.isadmin:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'دسترسی غیر مجاز'
+            }, encoder=JSONEncoder, status=400)"""
+        for file in files:
+            gf = GroupFile.objects.create(group=group, file=file)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': 'فایل ها با موفقیت به گروه افزوده شد'
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'افزودن فایل با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)

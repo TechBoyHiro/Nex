@@ -26,4 +26,5 @@ urlpatterns = [
     # Group PATHS
     re_path(r'group/add/$', groupcontroller.AddGroup, name="Add Group"),
     re_path(r'group/addsubcat/$', groupcontroller.AddGroupSubcat, name="Add Subcategories To A Group"),
+    re_path(r'group/addfiles/$', groupcontroller.AddGroupFiles, name="Add Files To A Group"),
 ]

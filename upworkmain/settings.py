@@ -145,6 +145,7 @@ USE_TZ = True
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10242880 # make it 5Mb instead of 2Mb
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
