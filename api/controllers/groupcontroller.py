@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import GroupFile,Group,GroupMember,SubCategory
+from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
@@ -208,4 +208,98 @@ def AddGroupFiles(request):
             'success': False,
             'code': '400',
             'data': 'افزودن فایل با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+# Done
+@csrf_exempt
+@api_view(['POST'])
+def AddGroupGig(request):
+    try:
+        data = request.data
+        check = (Check(data, ['groupid', 'title', 'description', 'subcatid', 'images']) & Check(request.headers,
+                                                                                                ['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        if ((data['groupid'] == "") | (data['groupid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'لطفا آیدی گروه را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        if ((data['subcatid'] == "") | (data['subcatid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'حداقل یک زیر دسته بندی وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        group = Group.objects.filter(id=data['groupid']).first()
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder)
+        gm = GroupMember.objects.filter(freelancer=freelancer, group=group).first()
+        if not gm:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        if not gm.isadmin:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'دسترسی غیر مجاز'
+            }, encoder=JSONEncoder, status=400)
+        files = request.FILES.getlist('images')
+        title = data['title']
+        description = data['description']
+        subcat = SubCategory.objects.filter(id=data['subcatid']).first()
+        if not subcat:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'زیر دسته بندی موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        gig = Gig.objects.create(group=group, subcat=subcat, title=title, description=description)
+        if not files:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'حداقل یک فایل ارسال کنید'
+            }, encoder=JSONEncoder, status=400)
+        x = 1
+        for file in files:
+            temp = GigFile.objects.create(gig=gig, file=file, priority=x)
+            x += 1
+        context = {}
+        context['message'] = 'گیگ با موفقیت ساخته شد'
+        context['GigId'] = gig.id
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساخت گیگ با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)

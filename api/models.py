@@ -126,7 +126,7 @@ class Gig(models.Model):
     leastprice = models.FloatField(default=10)
 
     def __str__(self):
-        return str(self.id) + ' ** ' + self.title + ' ** ' + self.freelancer.name
+        return str(self.id) + ' ** ' + self.title + ' ** ' + self.group.name
 
 # Done
 class GigFile(models.Model):
@@ -135,7 +135,7 @@ class GigFile(models.Model):
     priority = models.IntegerField(default=1)
 
     def __str__(self):
-        return str(self.id) + ' ** ' + self.work.title + ' ** ' + str(self.priority)
+        return str(self.id) + ' ** ' + self.gig.title + ' ** ' + str(self.priority)
 
 # Done
 class Package(models.Model):
