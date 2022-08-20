@@ -1,5 +1,5 @@
 from django.urls import re_path
-from .controllers import shopcontroller,freelancercontroller,groupcontroller
+from .controllers import shopcontroller,freelancercontroller,groupcontroller,categorycontroller
 
 urlpatterns = [
     # Shop PATHS
@@ -11,9 +11,9 @@ urlpatterns = [
     #re_path(r'user/check/$', shopcontroller.CheckSMS, name="Check Two-Factor Authentication"),
     #re_path(r'user/getchats/$', usercontroller.GetChatGroups, name="Get User Chat Groups"),
     # CATEGORY PATHS
-    #re_path(r'category/getall/$', categorycontroller.GetAll, name="Get All"),
-    #re_path(r'category/getcat/$', categorycontroller.GetCategories, name="Get All Categories"),
-    #re_path(r'category/getsub/$', categorycontroller.GetSubcategories, name="Get Subcategories Of A Category"),
+    re_path(r'category/getall/$', categorycontroller.GetAll, name="Get All"),
+    re_path(r'category/getcat/$', categorycontroller.GetCategories, name="Get All Categories"),
+    re_path(r'category/getsub/$', categorycontroller.GetSubcategories, name="Get Subcategories Of A Category"),
     # Freelancer PATHS
     re_path(r'freelancer/add/$', freelancercontroller.RegisterFreelancer, name="Freelancer Registration"),
     re_path(r'freelancer/update/$', freelancercontroller.Update, name="Update Freelancer Info"),
