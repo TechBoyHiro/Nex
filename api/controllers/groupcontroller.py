@@ -217,8 +217,7 @@ def AddGroupFiles(request):
 def AddGroupGig(request):
     try:
         data = request.data
-        check = (Check(data, ['groupid', 'title', 'description', 'subcatid', 'images']) & Check(request.headers,
-                                                                                                ['token']))
+        check = (Check(data, ['groupid', 'title', 'description', 'subcatid', 'images']) & Check(request.headers,['token']))
         if not (check is True):
             return check
     except:
