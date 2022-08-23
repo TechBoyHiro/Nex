@@ -135,10 +135,14 @@ def Login(request):
             freelancer = Freelancer.objects.filter(email=data['email']).get()
             if str(freelancer.password) == str(data['password']):
                 token = TokenHandler(freelancer.token)
+                name = freelancer.name
+                context = {}
+                context['Token'] = token
+                context['Name'] = name
                 return JsonResponse({
                     'success': True,
                     'code': '200',
-                    'data': token
+                    'data': context
                 }, encoder=JSONEncoder)
             return JsonResponse({
                 'success': False,
