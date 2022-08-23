@@ -159,7 +159,7 @@ def Login(request):
             return JsonResponse({
                 'success': True,
                 'code': '200',
-                'data': token
+                'data': context
             }, encoder=JSONEncoder)
         return JsonResponse({
             'success': False,
