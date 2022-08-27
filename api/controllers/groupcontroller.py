@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile
+from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile,GigMember,Package,PackageDetail
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
@@ -278,6 +278,7 @@ def AddGroupGig(request):
                 'data': 'زیر دسته بندی موجود نمیباشد'
             }, encoder=JSONEncoder, status=400)
         gig = Gig.objects.create(group=group, subcat=subcat, title=title, description=description)
+        gigmember = GigMember.objects.filter(groupmember=gm,gig=gig,isadmin=True,share=100)
         if not files:
             return JsonResponse({
                 'success': False,
@@ -302,3 +303,66 @@ def AddGroupGig(request):
             'code': '400',
             'data': 'ساخت گیگ با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def AddGigPackage(request):
+    try:
+        data = json.loads(request.body)
+        check = (Check(data, ['gigid', 'title', 'description', 'price', 'deliverytime', 'numberofrevisions',
+                              'keys', 'values']) & Check(request.headers, ['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        gig = Gig.objects.filter(id=data['id']).get()
+        gigmember = GigMember.objects.filter(gig=gig,groupmember__freelancer=freelancer).first()
+        if not gigmember:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'فریلنسر عضو گیگ نمیباشد'
+            }, encoder=JSONEncoder,status=400)
+        if gigmember.isadmin:
+            package = Package.objects.create(work=gig, title=data['title'], description=data['description'],
+                                             price=data['price'], deliverytime=data['deliverytime'],
+                                             numberofrevisions=data['numberofrevisions'])
+            if gig.leastprice > data['price']:
+                gig.leastprice = data['price']
+                gig.save()
+            keys = data['keys']
+            i = 0
+            for key in keys:
+                value = data['values'][i]
+                PackageDetail.objects.create(key=key, value=value, package=package)
+                i += 1
+            return JsonResponse({
+                'success': True,
+                'code': '200',
+                'data': 'پکیج با موفقیت افزوده شد'
+            }, encoder=JSONEncoder, status=200)
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'فریلنسر دسترسی ندارد'
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'افزودن پکیج با مشکل مواجه شد'
+        }, encoder=JSONEncoder,status=400)

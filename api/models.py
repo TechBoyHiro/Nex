@@ -138,6 +138,18 @@ class GigFile(models.Model):
         return str(self.id) + ' ** ' + self.gig.title + ' ** ' + str(self.priority)
 
 # Done
+class GigMember(models.Model):
+    groupmember = models.ForeignKey(GroupMember,on_delete=models.CASCADE)
+    gig = models.ForeignKey(Gig,on_delete=models.CASCADE)
+    isadmin = models.BooleanField(default=False)
+    datejoin = models.DateField(auto_now_add=True)
+    role = models.TextField()
+    share = models.FloatField()
+
+    def __str__(self):
+        return str(self.id) + ' ** ' + self.groupmember.freelancer.name + ' ** ' + self.gig.title
+
+# Done
 class Package(models.Model):
     gig = models.ForeignKey(Gig,on_delete=models.CASCADE)
     name = models.CharField(max_length=15)

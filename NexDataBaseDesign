@@ -60,6 +60,14 @@ file
 priority
 
 
+GigMember:
+*GroupMember
+*Gig
+isadmin
+role
+share
+
+
 Category:
 name
 description
@@ -161,3 +169,5 @@ Order m<----->1 Shop
 Group 1<----->m GroupFile
 Category 1<----->m Subcategory
 Freelancer m<----->1 City
+Gig 1<------->m GigMember
+GroupMember 1<--------->m GigMember
