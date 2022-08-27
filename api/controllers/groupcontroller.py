@@ -259,7 +259,7 @@ def AddGroupGig(request):
             return JsonResponse({
                 'success': False,
                 'code': '400',
-                'data': 'گروه موجود نمیباشد'
+                'data': 'فریلنسر عضو گروه نمیباشد'
             }, encoder=JSONEncoder, status=400)
         if not gm.isadmin:
             return JsonResponse({
@@ -278,7 +278,7 @@ def AddGroupGig(request):
                 'data': 'زیر دسته بندی موجود نمیباشد'
             }, encoder=JSONEncoder, status=400)
         gig = Gig.objects.create(group=group, subcat=subcat, title=title, description=description)
-        gigmember = GigMember.objects.filter(groupmember=gm,gig=gig,isadmin=True,share=100)
+        gigmember = GigMember.objects.filter(groupmember=gm,gig=gig,isadmin=True)
         if not files:
             return JsonResponse({
                 'success': False,
@@ -366,3 +366,102 @@ def AddGigPackage(request):
             'code': '400',
             'data': 'افزودن پکیج با مشکل مواجه شد'
         }, encoder=JSONEncoder,status=400)
+
+
+# Done
+@csrf_exempt
+@api_view(['POST'])
+def AddGigMember(request):
+    try:
+        data = request.data
+        check = (Check(data, ['gigid', 'groupmemberid','role','share']) & Check(request.headers,['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        if ((data['gigid'] == "") | (data['gigid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'آیدی گیگ را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        gig = Gig.objects.filter(id=data['gigid']).first()
+        if not gig:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گیگ موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        if ((data['groupmemberid'] == "") | (data['groupmemberid'] is None)):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'آیدی عضو گروه را وارد کنید'
+            }, encoder=JSONEncoder, status=400)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        gigmember = GigMember.objects.filter(gig=gig,isadmin=True).first()
+        if not gigmember:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گیگ ادمین ندارد با پشتیبانی تماس بگیرید'
+            }, encoder=JSONEncoder, status=400)
+        if not (gigmember.groupmember.freelancer==freelancer):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'فریلنسر دسترسی ندارد'
+            }, encoder=JSONEncoder, status=400)
+        gm = GroupMember.objects.filter(id=data['groupmemberid']).first()
+        if not (gm.group==gig.group):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'فریلنسر اول باید در گروه مالک گیگ عضو باشد'
+            }, encoder=JSONEncoder, status=400)
+        if ((GigMember.objects.filter(gig=gig,isadmin=True).get().groupmember.freelancer)==freelancer):
+            obj = GigMember.objects.filter(groupmember=gm, gig=gig,isadmin=True).first()
+            obj.share = data['share']
+            obj.role = data['role']
+            return JsonResponse({
+                'success': True,
+                'code': '200',
+                'data': 'سهام و نقش ادمین گیگ با موفقیت افزوده شد'
+            }, encoder=JSONEncoder, status=400)
+        """shares = 0
+        members = GigMember.objects.filter(gig=gig).all()
+        for member in members:
+            shares += member.share
+        if not (shares+data['share']==100.0):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'جمع درصد سهام از گیگ باید 100 باشد'
+            }, encoder=JSONEncoder, status=400)"""
+        obj = GigMember.objects.create(groupmember=gm,gig=gig,role=data['role'],share=data['share'])
+        context = {}
+        context['Message'] = 'فریلنسر با موفقیت به گیگ اضافه شد'
+        context['GigMemberId'] = obj.id
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساخت گیگ با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)

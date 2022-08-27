@@ -28,4 +28,6 @@ urlpatterns = [
     re_path(r'group/addsubcat/$', groupcontroller.AddGroupSubcat, name="Add Subcategories To A Group"),
     re_path(r'group/addfiles/$', groupcontroller.AddGroupFiles, name="Add Files To A Group"),
     re_path(r'group/addgig/$', groupcontroller.AddGroupGig, name="Add Gig To A Group"),
+    re_path(r'group/addpackage/$', groupcontroller.AddGigPackage, name="Add Package To A Gig"),
+    re_path(r'group/addgigmember/$', groupcontroller.AddGigMember, name="Add GroupMember To A Gig"),
 ]
