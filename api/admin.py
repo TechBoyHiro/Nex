@@ -23,6 +23,7 @@ class FreelancerAdmin(admin.ModelAdmin):
 admin.site.register(Token,TokenAdmin) #
 admin.site.register(Freelancer,FreelancerAdmin) #
 admin.site.register(City) #
+admin.site.register(GigMember) #
 admin.site.register(GroupFile) #
 admin.site.register(Category) #
 admin.site.register(SubCategory) #
