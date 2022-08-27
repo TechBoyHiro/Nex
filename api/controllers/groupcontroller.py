@@ -278,7 +278,7 @@ def AddGroupGig(request):
                 'data': 'زیر دسته بندی موجود نمیباشد'
             }, encoder=JSONEncoder, status=400)
         gig = Gig.objects.create(group=group, subcat=subcat, title=title, description=description)
-        gigmember = GigMember.objects.filter(groupmember=gm,gig=gig,isadmin=True)
+        gigmember = GigMember.objects.create(groupmember=gm,gig=gig,isadmin=True)
         if not files:
             return JsonResponse({
                 'success': False,
