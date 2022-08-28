@@ -105,7 +105,10 @@ class GroupMember(models.Model):
     isadmin = models.BooleanField(default=False)
     datejoin = models.DateField(auto_now_add=True)
     role = models.TextField()
-    share = models.FloatField()
+    share = models.FloatField(blank=True,null=True)
+
+    def __str__(self):
+        return str(self.id) + ' ** ' + self.freelancer.name + ' ** ' + self.group.name
 
 # Done
 class GroupFile(models.Model):
@@ -144,7 +147,7 @@ class GigMember(models.Model):
     isadmin = models.BooleanField(default=False)
     datejoin = models.DateField(auto_now_add=True)
     role = models.TextField()
-    share = models.FloatField()
+    share = models.FloatField(blank=True,null=True)
 
     def __str__(self):
         return str(self.id) + ' ** ' + self.groupmember.freelancer.name + ' ** ' + self.gig.title
@@ -159,7 +162,7 @@ class Package(models.Model):
     numberofrevisions = models.IntegerField(default=1)
 
     def __str__(self):
-        return str(self.price) + ' ** ' + self.title + ' ** ' + self.work.title
+        return str(self.price) + ' ** ' + self.name + ' ** ' + self.gig.title
 
 # Done
 class Order(models.Model):

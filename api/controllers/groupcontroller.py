@@ -278,7 +278,7 @@ def AddGroupGig(request):
                 'data': 'زیر دسته بندی موجود نمیباشد'
             }, encoder=JSONEncoder, status=400)
         gig = Gig.objects.create(group=group, subcat=subcat, title=title, description=description)
-        gigmember = GigMember.objects.create(groupmember=gm,gig=gig,isadmin=True)
+        gigmember = GigMember.objects.create(groupmember=gm, gig=gig, isadmin=True)
         if not files:
             return JsonResponse({
                 'success': False,
@@ -329,16 +329,16 @@ def AddGigPackage(request):
                 'code': '400',
                 'data': 'موچودی فریلنسر نمیباشد'
             }, encoder=JSONEncoder)
-        gig = Gig.objects.filter(id=data['id']).get()
-        gigmember = GigMember.objects.filter(gig=gig,groupmember__freelancer=freelancer).first()
+        gig = Gig.objects.filter(id=data['gigid']).get()
+        gigmember = GigMember.objects.filter(gig=gig, groupmember__freelancer=freelancer).first()
         if not gigmember:
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'فریلنسر عضو گیگ نمیباشد'
-            }, encoder=JSONEncoder,status=400)
+            }, encoder=JSONEncoder, status=400)
         if gigmember.isadmin:
-            package = Package.objects.create(work=gig, title=data['title'], description=data['description'],
+            package = Package.objects.create(gig=gig, name=data['title'], description=data['description'],
                                              price=data['price'], deliverytime=data['deliverytime'],
                                              numberofrevisions=data['numberofrevisions'])
             if gig.leastprice > data['price']:
@@ -411,34 +411,35 @@ def AddGigMember(request):
                 'code': '400',
                 'data': 'موچودی فریلنسر نمیباشد'
             }, encoder=JSONEncoder)
-        gigmember = GigMember.objects.filter(gig=gig,isadmin=True).first()
+        gigmember = GigMember.objects.filter(gig=gig, isadmin=True).first()
         if not gigmember:
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'گیگ ادمین ندارد با پشتیبانی تماس بگیرید'
             }, encoder=JSONEncoder, status=400)
-        if not (gigmember.groupmember.freelancer==freelancer):
+        if not (gigmember.groupmember.freelancer == freelancer):
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'فریلنسر دسترسی ندارد'
             }, encoder=JSONEncoder, status=400)
         gm = GroupMember.objects.filter(id=data['groupmemberid']).first()
-        if not (gm.group==gig.group):
+        if not (gm.group == gig.group):
             return JsonResponse({
                 'success': False,
                 'code': '400',
                 'data': 'فریلنسر اول باید در گروه مالک گیگ عضو باشد'
             }, encoder=JSONEncoder, status=400)
-        if ((GigMember.objects.filter(gig=gig,isadmin=True).get().groupmember.freelancer)==freelancer):
-            obj = GigMember.objects.filter(groupmember=gm, gig=gig,isadmin=True).first()
+        if GigMember.objects.filter(groupmember=gm, gig=gig).exists():
+            obj = GigMember.objects.filter(groupmember=gm, gig=gig).get()
             obj.share = data['share']
             obj.role = data['role']
+            obj.save()
             return JsonResponse({
                 'success': True,
                 'code': '200',
-                'data': 'سهام و نقش ادمین گیگ با موفقیت افزوده شد'
+                'data': 'سهام و نقش موفقیت بروزرسانی شد'
             }, encoder=JSONEncoder, status=400)
         """shares = 0
         members = GigMember.objects.filter(gig=gig).all()
@@ -450,7 +451,7 @@ def AddGigMember(request):
                 'code': '400',
                 'data': 'جمع درصد سهام از گیگ باید 100 باشد'
             }, encoder=JSONEncoder, status=400)"""
-        obj = GigMember.objects.create(groupmember=gm,gig=gig,role=data['role'],share=data['share'])
+        obj = GigMember.objects.create(groupmember=gm, gig=gig, role=data['role'], share=data['share'])
         context = {}
         context['Message'] = 'فریلنسر با موفقیت به گیگ اضافه شد'
         context['GigMemberId'] = obj.id
