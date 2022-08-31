@@ -9,11 +9,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile,GigMember,Package,PackageDetail
+from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile,GigMember,Package,PackageDetail,Order
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
 from django.core.serializers.json import DjangoJSONEncoder
+from api.infra.modelserializers.groupserializers import GroupGetSerializer,GroupGetListSerializer
 from rest_framework.decorators import api_view
 from twilio.rest import Client
 import requests
@@ -460,6 +461,113 @@ def AddGigMember(request):
             'code': '200',
             'data': context
         }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساخت گیگ با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def GetGroups(request):
+    try:
+        check = Check(request.headers,['token'])
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        groupmembers = GroupMember.objects.filter(freelancer=freelancer).all()
+        context = []
+        totalrevenue = 0
+        for temp in groupmembers:
+            for gig, date, share in GigMember.objects.filter(groupmember=temp).values_list('gig', 'datejoin', 'share'):
+                orders = Order.objects.filter(package__gig=gig, ispaid=True, date__gte=date).all()
+                for order in orders:
+                    totalrevenue = totalrevenue + (order.package.price * (share / 100))
+            test = GroupGetListSerializer(temp, context={'totalrevenue': totalrevenue})
+            context.append(test.data)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساخت گیگ با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def GetGroupDetails(request):
+    try:
+        data = request.data
+        check = Check(data, ['groupid'])
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        group = Group.objects.filter(id=data['groupid']).first()
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder)
+        context = []
+        temp = GroupGetSerializer(group)
+        context.append(temp.data)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساخت گیگ با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def UpdateGroup(request):
+    try:
+        data = request.data
+        check = Check(data, ['name','description','rate','successfulnumbers','website','instalink'])
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        print(request.data)
     except:
         return JsonResponse({
             'success': False,

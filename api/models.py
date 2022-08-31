@@ -1,14 +1,14 @@
 import sys
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from datetime import datetime,date
 
 # MODELS =>
 
 # Done
 class Token(models.Model): # token assigns to every user
     token = models.CharField(max_length=128)
-    validdate = models.DateTimeField(auto_now_add=True)
+    validdate = models.DateTimeField(default=datetime.now())
 
     def __str__(self):
         return str(self.id) + ' ** ' + self.token + ' ** ' + str(self.validdate)
@@ -50,7 +50,7 @@ class Shop(models.Model):
     address = models.TextField()
     phone = models.CharField(max_length=11)
     profilepic = models.ImageField(upload_to='ShopProfiles/',blank=True,null=True)
-    datejoin = models.DateField(auto_now_add=True)
+    datejoin = models.DateField(default=date.today())
     instalink = models.TextField()
     website = models.TextField()
     description = models.TextField()
@@ -74,7 +74,7 @@ class Freelancer(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=11)
     address = models.TextField()
-    datejoin = models.DateField(auto_now_add=True)
+    datejoin = models.DateField(default=date.today())
     profilepic = models.ImageField(upload_to='FreelancerProfiles/',blank=True,null=True)
     isauthenticated = models.BooleanField(default=False)
 
@@ -89,7 +89,7 @@ class Group(models.Model):
     description = models.TextField()
     rate = models.FloatField(default=2.5)
     successfulnumbers = models.IntegerField(default=0)
-    datejoin = models.DateField(auto_now_add=True)
+    datejoin = models.DateField(default=date.today())
     website = models.TextField()
     instalink = models.TextField()
     isapproved = models.BooleanField(default=False)
@@ -103,7 +103,7 @@ class GroupMember(models.Model):
     freelancer = models.ForeignKey(Freelancer,on_delete=models.RESTRICT)
     group = models.ForeignKey(Group,on_delete=models.RESTRICT)
     isadmin = models.BooleanField(default=False)
-    datejoin = models.DateField(auto_now_add=True)
+    datejoin = models.DateField(default=date.today())
     role = models.TextField()
     share = models.FloatField(blank=True,null=True)
 
@@ -145,7 +145,7 @@ class GigMember(models.Model):
     groupmember = models.ForeignKey(GroupMember,on_delete=models.CASCADE)
     gig = models.ForeignKey(Gig,on_delete=models.CASCADE)
     isadmin = models.BooleanField(default=False)
-    datejoin = models.DateField(auto_now_add=True)
+    datejoin = models.DateField(default=date.today())
     role = models.TextField()
     share = models.FloatField(blank=True,null=True)
 
@@ -168,10 +168,10 @@ class Package(models.Model):
 class Order(models.Model):
     shop = models.ForeignKey(Shop,on_delete=models.RESTRICT)
     package = models.ForeignKey(Package,on_delete=models.RESTRICT)
-    date = models.DateTimeField(auto_now_add=True)
+    deliverytime = models.DateField(default=date.today())
+    date = models.DateTimeField(default=datetime.now())
     ispaid = models.BooleanField(default=False)
     tracknumber = models.TextField()
-    deliverytime = models.DateField(auto_now_add=True)
     description = models.TextField()
 
 # Done
@@ -180,7 +180,7 @@ class Review(models.Model):
     Package = models.ForeignKey(Package,on_delete=models.RESTRICT)
     rate = models.FloatField(default=2.5)
     description = models.CharField(max_length=100)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=date.today())
 
 
 # Done
@@ -190,7 +190,7 @@ class PackageDetail(models.Model):
     value = models.TextField()
 
     def __str__(self):
-        return self.key + ' ** ' + self.value + ' ** ' + self.package.title
+        return self.key + ' ** ' + self.value + ' ** ' + self.package.name
 
 # Done
 class Tag(models.Model):
@@ -204,8 +204,8 @@ class Tag(models.Model):
 class SMS(models.Model):
     sms = models.CharField(max_length=5)
     phone = models.CharField(max_length=11)
-    issued = models.DateTimeField(auto_now_add=True)
-    valid = models.DateTimeField()
+    issued = models.DateTimeField(default=datetime.now())
+    valid = models.DateTimeField(default=datetime.now())
 
 
 
