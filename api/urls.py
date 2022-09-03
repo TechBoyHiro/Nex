@@ -30,6 +30,8 @@ urlpatterns = [
     re_path(r'group/addgig/$', groupcontroller.AddGroupGig, name="Add Gig To A Group"),
     re_path(r'group/addpackage/$', groupcontroller.AddGigPackage, name="Add Package To A Gig"),
     re_path(r'group/addgigmember/$', groupcontroller.AddGigMember, name="Add GroupMember To A Gig"),
-    re_path(r'group/getgroups/$', groupcontroller.GetGroups, name="Get Freelancer Groups"),
+    re_path(r'group/getgroups/$', groupcontroller.GetGroupList, name="Get Freelancer Groups"),
     re_path(r'group/get/$', groupcontroller.GetGroupDetails, name="Get Group Information"),
+    re_path(r'group/updateinfo/$', groupcontroller.UpdateGroupInfo, name="Update Group Information"),
+    re_path(r'group/getfiles/$', groupcontroller.GetGroupFiles, name="Get Group Files (Certificates)"),
 ]

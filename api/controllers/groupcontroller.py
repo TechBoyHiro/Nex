@@ -14,7 +14,7 @@ from api.models import GroupFile,Group,GroupMember,SubCategory,Gig,GigFile,GigMe
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
 from django.core.serializers.json import DjangoJSONEncoder
-from api.infra.modelserializers.groupserializers import GroupGetSerializer,GroupGetListSerializer
+from api.infra.modelserializers.groupserializers import GroupGetSerializer,GroupGetListSerializer,FileSerializer
 from rest_framework.decorators import api_view
 from twilio.rest import Client
 import requests
@@ -64,8 +64,8 @@ def AddGroup(request):
                                                  share=100.0)
         context = {}
         context['Message'] = "گروه با موفقیت ساخته شد"
-        context['GroupId'] = group.id
-        context['GroupName'] = group.name
+        temp = GroupGetListSerializer(groupmember,context={'totalrevenue':None}).data
+        context['Group'] = (GroupGetSerializer(group,context={'members':temp})).data
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -471,7 +471,7 @@ def AddGigMember(request):
 
 @csrf_exempt
 @api_view(['POST'])
-def GetGroups(request):
+def GetGroupList(request):
     try:
         check = Check(request.headers,['token'])
         if not (check is True):
@@ -537,8 +537,11 @@ def GetGroupDetails(request):
                 'data': 'گروه موجود نمیباشد'
             }, encoder=JSONEncoder)
         context = []
-        temp = GroupGetSerializer(group)
-        context.append(temp.data)
+        members = GroupMember.objects.filter(group=group).all()
+        list = []
+        for member in members:
+            list.append(GroupGetListSerializer(member, context={'totalrevenue': None}).data)
+        context.append((GroupGetSerializer(group,context={'members':list})).data)
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -554,10 +557,10 @@ def GetGroupDetails(request):
 
 @csrf_exempt
 @api_view(['POST'])
-def UpdateGroup(request):
+def UpdateGroupInfo(request):
     try:
         data = request.data
-        check = Check(data, ['name','description','rate','successfulnumbers','website','instalink'])
+        check = (Check(data, ['groupid','name','description','successfulnumbers','website','instalink']) & Check(request.headers,['token']))
         if not (check is True):
             return check
     except:
@@ -567,10 +570,95 @@ def UpdateGroup(request):
             'data': 'ساختار ارسال داده درست نمیباشد'
         }, encoder=JSONEncoder, status=400)
     try:
-        print(request.data)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        group = Group.objects.filter(id=data['groupid']).first()
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موردنظر موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        admin = GroupMember.objects.filter(group=group, isadmin=True).first().freelancer
+        if not (admin == freelancer):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'دسترسی غیر مجاز'
+            }, encoder=JSONEncoder, status=400)
+        if (data['name'] != None) | (data['name'] != ""):
+            if Group.objects.filter(name=data['name']).exists():
+                return JsonResponse({
+                    'success': False,
+                    'code': '400',
+                    'data': 'گروهی با این نام قبلا ثبت شده است'
+                }, encoder=JSONEncoder, status=400)
+        group.name = BlankOrElse(group.name, data['name'])
+        group.description = BlankOrElse(group.description, data['description'])
+        group.successfulnumbers = BlankOrElse(group.successfulnumbers, data['successfulnumbers'])
+        group.website = BlankOrElse(group.website, data['website'])
+        group.instalink = BlankOrElse(group.instalink, data['instalink'])
+        group.save()
+        context = []
+        members = GroupMember.objects.filter(group=group).all()
+        list = []
+        for member in members:
+            list.append(GroupGetListSerializer(member, context={'totalrevenue': None}).data)
+        context.append((GroupGetSerializer(group, context={'members': list})).data)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder)
     except:
         return JsonResponse({
             'success': False,
             'code': '400',
-            'data': 'ساخت گیگ با مشکل مواجه شد'
+            'data': 'بروزرسانی گروه با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def GetGroupFiles(request):
+    try:
+        data = request.data
+        check = Check(data, ['groupid'])
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        group = Group.objects.filter(id=data['groupid']).first()
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موردنظر موجود نمیباشد'
+            }, encoder=JSONEncoder, status=400)
+        files = GroupFile.objects.filter(group=group).all()
+        context = []
+        for file in files:
+            temp = FileSerializer(file,context={'description':file.description})
+            context.append(temp.data)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'دریافت فایل با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)
