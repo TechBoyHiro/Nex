@@ -117,7 +117,7 @@ class GroupFile(models.Model):
     description = models.TextField()
 
     def __str__(self):
-        return self.group.name + ' ** ' + self.description
+        return str(self.id) + ' ** ' + self.group.name + ' ** ' + self.description
 
 # Done
 class Gig(models.Model):

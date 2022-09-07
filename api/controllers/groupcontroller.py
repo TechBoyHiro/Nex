@@ -15,7 +15,10 @@ from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
 from django.core.serializers.json import DjangoJSONEncoder
 from api.infra.modelserializers.groupserializers import GroupGetSerializer,GroupGetListSerializer,FileSerializer
+from api.infra.modelserializers.gigserializers import GigGetSerializer
 from rest_framework.decorators import api_view
+from django.core.files import File
+from django.conf import settings
 from twilio.rest import Client
 import requests
 import random
@@ -199,6 +202,7 @@ def AddGroupFiles(request):
             }, encoder=JSONEncoder, status=400)"""
         for file in files:
             gf = GroupFile.objects.create(group=group, file=file)
+            gf.save()
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -289,6 +293,7 @@ def AddGroupGig(request):
         x = 1
         for file in files:
             temp = GigFile.objects.create(gig=gig, file=file, priority=x)
+            temp.save()
             x += 1
         context = {}
         context['message'] = 'گیگ با موفقیت ساخته شد'
@@ -661,4 +666,65 @@ def GetGroupFiles(request):
             'success': False,
             'code': '400',
             'data': 'دریافت فایل با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def GetGroupGigs(request):
+    try:
+        data = request.data
+        check = Check(data, ['groupid'])
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        group = Group.objects.filter(id=data['groupid']).first()
+        if not group:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'گروه موجود نمیباشد'
+            }, encoder=JSONEncoder)
+        hastoken = False
+        result = False
+        if 'token' in request.headers:
+            hastoken = True
+            token = request.headers['token']
+            result, freelancer = GetObjByToken(token)
+        gigs = Gig.objects.filter(group=group).all()
+        context = []
+        for gig in gigs:
+            imageURL = GigFile.objects.filter(gig=gig, priority=1).get().file.url
+            if hastoken & (not result):
+                groupmember = GroupMember.objects.filter(freelancer=freelancer, group=gig.group).first()
+                if not groupmember:
+                    test = GigGetSerializer(gig, context={'image': imageURL, 'myshare': "", 'myrole': ""})
+                    context.append(test.data)
+                gigmember = GigMember.objects.filter(groupmember=groupmember, gig=gig).first()
+                if not gigmember:
+                    test = GigGetSerializer(gig, context={'image': imageURL, 'myshare': "", 'myrole': ""})
+                    context.append(test.data)
+                test = GigGetSerializer(gig,
+                                        context={'image': imageURL, 'myshare': gigmember.share,
+                                                 'myrole': gigmember.role})
+                context.append(test.data)
+            else:
+                test = GigGetSerializer(gig, context={'image': imageURL, 'myshare': "", 'myrole': ""})
+                context.append(test.data)
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': context
+        }, encoder=JSONEncoder)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'دریافت گیگ با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)

@@ -34,4 +34,5 @@ urlpatterns = [
     re_path(r'group/get/$', groupcontroller.GetGroupDetails, name="Get Group Information"),
     re_path(r'group/updateinfo/$', groupcontroller.UpdateGroupInfo, name="Update Group Information"),
     re_path(r'group/getfiles/$', groupcontroller.GetGroupFiles, name="Get Group Files (Certificates)"),
+    re_path(r'group/getgigs/$', groupcontroller.GetGroupGigs, name="Get Group Gigs"),
 ]
