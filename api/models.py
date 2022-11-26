@@ -68,6 +68,7 @@ class City(models.Model):
 class Freelancer(models.Model):
     token = models.OneToOneField(Token,on_delete=models.RESTRICT,null=True)
     city = models.ForeignKey(City,on_delete=models.RESTRICT,blank=True,null=True)
+    subcat = models.ForeignKey(SubCategory,on_delete=models.CASCADE,blank=True,null=True)
     name = models.CharField(max_length=25)
     description = models.TextField()
     password = models.TextField()
@@ -76,6 +77,7 @@ class Freelancer(models.Model):
     address = models.TextField()
     datejoin = models.DateField(default=date.today())
     profilepic = models.ImageField(upload_to='FreelancerProfiles/',blank=True,null=True)
+    resume = models.FileField(upload_to='FreelancerResumes/',blank=True,null=True)
     isauthenticated = models.BooleanField(default=False)
 
     def __str__(self):
@@ -168,7 +170,7 @@ class Package(models.Model):
 class Order(models.Model):
     shop = models.ForeignKey(Shop,on_delete=models.RESTRICT)
     package = models.ForeignKey(Package,on_delete=models.RESTRICT)
-    deliverytime = models.DateField(default=date.today())
+    deliverytime = models.DateField(default=date.today()) # It's todays date + package's delivery time
     date = models.DateTimeField(default=datetime.now())
     ispaid = models.BooleanField(default=False)
     tracknumber = models.TextField()

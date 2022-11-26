@@ -19,6 +19,7 @@ urlpatterns = [
     re_path(r'freelancer/update/$', freelancercontroller.Update, name="Update Freelancer Info"),
     re_path(r'freelancer/login/$', freelancercontroller.Login, name="Freelancer Login"),
     re_path(r'freelancer/get/$', freelancercontroller.GetFreelancer, name="Get Freelancer Info"),
+    re_path(r'freelancer/addresume/$', freelancercontroller.AddFreelancerResume, name="Add Freelancer Resume"),
     # Gig PATHS
     #re_path(r'gig/add/$', gigcontroller.AddGig, name="Add Gig"),
     #re_path(r'gig/addfiles/$', gigcontroller.AddGigFile, name="Add File To A Gig"),

@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.forms import model_to_dict
 from duplicity.tempdir import default
 from django.contrib.auth.hashers import check_password
-from api.models import Freelancer,Token,Category,City
+from api.models import Freelancer,Token,Category,City,SubCategory
 from django.utils.timezone import make_aware
 from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse,TokenHandler
 from django.core.serializers.json import DjangoJSONEncoder
@@ -82,7 +82,7 @@ def RegisterFreelancer(request):
 @api_view(['POST'])
 def Update(request):
     data = json.loads(request.body)
-    check = (Check(data, ['cityid', 'address', 'description','password','email']) & Check(request.headers,['token']))
+    check = (Check(data, ['cityid', 'address', 'description','password','email','subcatid']) & Check(request.headers,['token']))
     if not (check is True):
         return check
     token = request.headers['token']
@@ -102,7 +102,19 @@ def Update(request):
                     'code': '404',
                     'data': 'شهر موجود نمیباشد'
                 }, encoder=JSONEncoder)
+
             freelancer.city = City.objects.filter(id=data['cityid']).get()
+
+        if not ((data['subcatid'] == '') | (data['subcatid'] is None)):
+            if not SubCategory.objects.filter(id=data['subcatid']).exists:
+                return JsonResponse({
+                    'success': False,
+                    'code': '404',
+                    'data': 'شهر موجود نمیباشد'
+                }, encoder=JSONEncoder)
+
+            freelancer.subcat = SubCategory.objects.filter(id=data['subcatid']).get()
+
         freelancer.description = BlankOrElse(freelancer.description,data['description'])
         freelancer.address = BlankOrElse(freelancer.address,data['address'])
         freelancer.password = BlankOrElse(freelancer.password, data['password'])
@@ -217,6 +229,49 @@ def GetFreelancer(request):
 
 
 
+@csrf_exempt
+@api_view(['POST'])
+def AddFreelancerResume(request):
+    try:
+        data = request.data
+        check = (Check(data, ['resume']) & Check(request.headers, ['token']))
+        if not (check is True):
+            return check
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'ساختار ارسال داده درست نمیباشد'
+        }, encoder=JSONEncoder, status=400)
+    try:
+        resume = request.FILES['resume']
+        if not resume:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'لطفا رزومه را ارسال کنید'
+            }, encoder=JSONEncoder, status=400)
+        token = request.headers['token']
+        result, freelancer = GetObjByToken(token)
+        if (result):
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': 'موچودی فریلنسر نمیباشد'
+            }, encoder=JSONEncoder)
+        freelancer.resume = resume
+        freelancer.save()
+        return JsonResponse({
+            'success': True,
+            'code': '200',
+            'data': 'فایل با موفقیت به فریلنسر افزوده شد'
+        }, encoder=JSONEncoder, status=400)
+    except:
+        return JsonResponse({
+            'success': False,
+            'code': '400',
+            'data': 'افزودن فایل با مشکل مواجه شد'
+        }, encoder=JSONEncoder, status=400)
 
 
 

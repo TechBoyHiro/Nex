@@ -113,6 +113,7 @@ description
 
 
 Freelancer:
+*Subcat
 name
 description
 password
@@ -121,6 +122,7 @@ phone
 city
 address
 datejoin
+resume
 
 
 GroupFile:
