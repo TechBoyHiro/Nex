@@ -75,6 +75,10 @@ def AddGroup(request):
         context['Message'] = "گروه با موفقیت ساخته شد"
         temp = GroupGetListSerializer(groupmember,context={'totalrevenue':None}).data
         context['Group'] = (GroupGetSerializer(group,context={'members':temp})).data
+        loop = asyncio.get_event_loop()
+        loop.create_task(CreateGroupChatGroup(freelancer.token.token,group.name,freelancer.name))
+        await asyncio.wait(loop)
+        loop.close()
         return JsonResponse({
             'success': True,
             'code': '200',
@@ -555,9 +559,14 @@ def ProcessInvitation(request): # Accept Or Reject An Invitations
             }, encoder=JSONEncoder, status=400)
         if operation: # If Operation Was True It Means Accepting Invitation And Adding To Group
             GroupMember.objects.create(freelancer=invit.receiver,group=invit.group,role=invit.role)
+            ownertoken = GroupMember.objects.filter(group=invit.group,isadmin=True).get().freelancer.token.token
             GroupMember.save()
             invit.delete()
             Invitation.save()
+            loop = asyncio.get_event_loop()
+            loop.create_task(AddToGroupChatGroup(invit.receiver.token.token,ownertoken))
+            await asyncio.wait(loop)
+            loop.close()
             return JsonResponse({
                 'success': True,
                 'code': '200',
@@ -576,3 +585,19 @@ def ProcessInvitation(request): # Accept Or Reject An Invitations
             'code': '400',
             'data': 'ثبت یا رد دعوتنامه با مشکل مواجه شد'
         }, encoder=JSONEncoder, status=400)
+
+
+async def CreateGroupChatGroup(token,groupname,ownername):
+    ChatSERVER = "http://localhost:8088/api/room/addgroup/"
+    req_body = {"token": token, "groupname": groupname, "ownername": ownername}
+    req_header = {"accept": "application/json",
+                  "content-type": "application/json'"}
+    requests.post(ChatSERVER, data=json.dumps(req_body), headers=req_header)
+
+
+async def AddToGroupChatGroup(token,ownertoken):
+    ChatSERVER = "http://localhost:8088/api/room/join/"
+    req_body = {"token": token, "ownertoken": ownertoken}
+    req_header = {"accept": "application/json",
+                  "content-type": "application/json'"}
+    requests.post(ChatSERVER, data=json.dumps(req_body), headers=req_header)
