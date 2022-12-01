@@ -12,17 +12,11 @@ from django.contrib.auth.hashers import check_password
 from api.models import User,Token,Shop,SMS,BusinessType,Freelancer,Group,GroupMember
 #from chat.models import ChatGroup,ChatMessage
 from django.utils.timezone import make_aware
-from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse
+from api.infra.infrastructure import GetObjByToken,CheckToken,Check,BlankOrElse,random_number,random_str
 from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.decorators import api_view
 from twilio.rest import Client
 import requests
-import random
-import string
-
-
-random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(N))
-random_number = lambda N: ''.join(random.SystemRandom().choice(string.digits) for _ in range(N))
 
 
 # Done

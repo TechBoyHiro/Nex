@@ -77,6 +77,7 @@ class Freelancer(models.Model):
     address = models.TextField()
     datejoin = models.DateField(default=date.today())
     profilepic = models.ImageField(upload_to='FreelancerProfiles/',blank=True,null=True)
+    linkedin = models.TextField(blank=True,null=True)
     resume = models.FileField(upload_to='FreelancerResumes/',blank=True,null=True)
     isauthenticated = models.BooleanField(default=False)
 
@@ -154,6 +155,15 @@ class GigMember(models.Model):
     def __str__(self):
         return str(self.id) + ' ** ' + self.groupmember.freelancer.name + ' ** ' + self.gig.title
 
+
+class Invitation(models.Model):
+    group = models.ForeignKey(Group,on_delete=models.CASCADE)
+    receiver = models.ForeignKey(Freelancer,on_delete=models.CASCADE)
+    content = models.TextField()
+    role = models.TextField()
+    date = models.DateField(default=date.today())
+    reference = models.TextField(max_length=10,blank=True,null=True)
+
 # Done
 class Package(models.Model):
     gig = models.ForeignKey(Gig,on_delete=models.CASCADE)
@@ -166,6 +176,17 @@ class Package(models.Model):
     def __str__(self):
         return str(self.price) + ' ** ' + self.name + ' ** ' + self.gig.title
 
+
+# Done
+class PackageDetail(models.Model):
+    package = models.ForeignKey(Package,on_delete=models.CASCADE)
+    key = models.TextField()
+    value = models.TextField()
+
+    def __str__(self):
+        return self.key + ' ** ' + self.value + ' ** ' + self.package.name
+
+
 # Done
 class Order(models.Model):
     shop = models.ForeignKey(Shop,on_delete=models.RESTRICT)
@@ -173,8 +194,10 @@ class Order(models.Model):
     deliverytime = models.DateField(default=date.today()) # It's todays date + package's delivery time
     date = models.DateTimeField(default=datetime.now())
     ispaid = models.BooleanField(default=False)
-    tracknumber = models.TextField()
-    description = models.TextField()
+    tracknumber = models.TextField(blank=True,null=True)
+    description = models.TextField(blank=True,null=True)
+    cardnumber = models.TextField(blank=True,null=True)
+
 
 # Done
 class Review(models.Model):
@@ -186,21 +209,13 @@ class Review(models.Model):
 
 
 # Done
-class PackageDetail(models.Model):
-    package = models.ForeignKey(Package,on_delete=models.CASCADE)
-    key = models.TextField()
-    value = models.TextField()
-
-    def __str__(self):
-        return self.key + ' ** ' + self.value + ' ** ' + self.package.name
-
-# Done
 class Tag(models.Model):
     gigs = models.ManyToManyField(Gig,blank=True,null=True)
     name = models.TextField()
 
     def __str__(self):
         return self.name
+
 
 # Done
 class SMS(models.Model):

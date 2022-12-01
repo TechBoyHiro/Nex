@@ -8,6 +8,7 @@ import string
 
 
 random_str = lambda N: ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(N))
+random_number = lambda N: ''.join(random.SystemRandom().choice(string.digits) for _ in range(N))
 
 
 def Check(request,data):
@@ -23,6 +24,16 @@ def Check(request,data):
         }, encoder=JSONEncoder)
     else:
         return check
+
+
+def CheckNullable(list,error):
+    for data in list:
+        if data is None:
+            return JsonResponse({
+                'success': False,
+                'code': '400',
+                'data': error
+            }, encoder=JSONEncoder)
 
 
 def BlankOrElse(param1,param2):

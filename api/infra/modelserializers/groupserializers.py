@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Group,GroupMember,GroupFile,Order
+from api.models import Group,GroupMember,GroupFile,Order,Invitation
 
 
 class GroupGetSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class GroupGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ('groupname','description','rate','successfulnumbers','datejoin','website','instalink','isapproved','icon','subcats','followers','members')
+        fields = ('id','groupname','description','rate','successfulnumbers','datejoin','website','instalink','isapproved','icon','subcats','followers','members')
 
 
 class GroupGetListSerializer(serializers.ModelSerializer):
@@ -60,3 +60,14 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupFile
         fields = ('id','file','description')
+
+
+class InvitationSerializer(serializers.ModelSerializer):
+    groupname = serializers.SerializerMethodField("get_groupname")
+
+    def get_groupname(self,invit):
+        return invit.group.name
+
+    class Meta:
+        model = Invitation
+        fields = ('groupname','content','role','date','reference')
